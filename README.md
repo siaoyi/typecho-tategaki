@@ -2,7 +2,7 @@
 
 **直排排版外掛 · Vertical Text Plugin for Typecho**
 
-[繁體中文](#繁體中文) · [English](#english)
+[正體中文](#正體中文) · [English](#english)
 
 ![docs/screenshot.png ](https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgaLhhq4VnbJQDiti2yVc4GCk8dv_TEdb4RwvWcZNIiAg9G2gRKBXGU8KLz7eMn9dqLwA0nwNVPndxQUf4mhyphenhyphenmS7jvkb0nC_KbVozoZd8kbYLEGgUP0ber7FO9YeSkOwnhg81JDDMGjs8xnxSicbzrMhvIkyJEN1Lw7f6dh2UtxxIpjHISDfOGOK6I0bAA/s1542/image.png)／ 
 
