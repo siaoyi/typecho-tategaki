@@ -1,0 +1,467 @@
+.tate {
+  --len: min(640px, 87svh);
+  --fs: calc(var(--len) / 32);   /* 一個正文字的大小，下面所有「幾行」「幾字」都以它為單位 */
+  --col: calc(var(--fs) * 2);    /* 正文一行（一直欄）的寬度 = line-height 2 */
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  text-combine-upright: digits 2;
+  font-size: var(--fs);
+  line-height: 2;
+  height: var(--len);
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: pre-wrap;
+}
+
+.tate rt {
+  font-size: .5em;
+  letter-spacing: 0;
+}
+
+/* JS 分頁後：外層改回橫向，每一頁是一個固定高度的直排框，由上往下堆疊 */
+.tate.tate-paged {
+  writing-mode: horizontal-tb;
+  height: auto;
+  overflow: visible;
+  white-space: normal;
+}
+
+.tate-page {
+  --gap: 1em;                               /* 文字離下方虛線的距離 */
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  text-combine-upright: digits 2;
+  box-sizing: border-box;
+  width: 100%;
+  height: calc(var(--len) + var(--gap));    /* 原本是 var(--len)；補上內距，欄長不縮短 */
+  padding-bottom: var(--gap);               /* 新增 */
+  overflow: hidden;
+  white-space: pre-wrap;
+  margin-bottom: 1em;                       /* 虛線離下一頁文字的距離 */
+  border-bottom: 1px dashed #ccc;
+}
+
+/* ------------------
+ * 標題
+ * 直排時「行」是由右往左的直欄，所以標題佔幾行 = line-height 設成幾個 --col。
+ * margin-block 是左右方向（行與行之間）的留白。
+ * --------------- */
+.tate-page h1,
+.tate-page h2,
+.tate-page h3,
+.tate-page h4,
+.tate-page h5,
+.tate-page h6 {
+  margin: 0;
+  padding: 0;
+}
+
+/* 標題一～三：行高收緊（1.5），換行時欄距就不會散；
+ * 單行標題要佔滿的寬度，改用左右 padding 補齊：(目標寬度 - 一行寬度) / 2
+ * text-wrap: balance 讓換行後的各欄長短接近 */
+.tate-page h1,
+.tate-page h2,
+.tate-page h3 {
+  line-height: 1.5;
+  text-align: start;
+  text-wrap: balance;
+}
+
+/* 標題一（章名）：單行佔兩行寬，從頂端開始；左側接正文處空兩行 */
+.tate-page h1 {
+  font-family: "FOT-TsukuAOldMin Pr6N", "FOT-TsukuMin Pro", "Source Han Serif K", "Noto Sans JP Black", "繁媛明朝 H", "Hiragino Sans", "Fan Wun Min", "Yu Gothic", "Noto Serif JP Black", "MS Gothic", sans-serif;
+  font-size: 2em;
+  padding-block: calc((var(--col) * 2 - 1.5em) / 2);
+  margin-block: 0 calc(var(--col) * 2);
+}
+
+/* 標題二：單行佔三行寬，縮進兩字 */
+.tate-page h2 {
+  font-family: "FOT-TsukuAOldMin Pr6N", "FOT-TsukuMin Pro", "Source Han Serif K", "Noto Sans JP Black", "繁媛明朝 H", "Hiragino Sans", "Fan Wun Min", "Yu Gothic", "Noto Serif JP Black", "MS Gothic", sans-serif;
+  font-size: 1.5em;
+  padding-block: calc((var(--col) * 3 - 1.5em) / 2);
+  padding-inline-start: calc(var(--fs) * 2);
+}
+
+/* 標題三：單行佔兩行寬，縮進兩字 */
+.tate-page h3 {
+  font-family: "FOT-TsukuAOldMin Pr6N", "FOT-TsukuMin Pro", "Source Han Serif K", "Noto Sans JP Black", "繁媛明朝 H", "Hiragino Sans", "Fan Wun Min", "Yu Gothic", "Noto Serif JP Black", "MS Gothic", sans-serif;
+  font-size: 1.25em;
+  padding-block: calc((var(--col) * 2 - 1.5em) / 2);
+  padding-inline-start: calc(var(--fs) * 2);
+}
+
+/* 標題四～六：佔一行，粗體，縮進兩字，字體跟正文一樣 */
+.tate-page h4,
+.tate-page h5,
+.tate-page h6 {
+  font-family: "FOT-TsukuAOldMin Pr6N", "FOT-TsukuMin Pro", "Source Han Serif K", "Noto Sans JP Black", "繁媛明朝 H", "Hiragino Sans", "Fan Wun Min", "Yu Gothic", "Noto Serif JP Black", "MS Gothic", sans-serif;
+  font-size: 1em;
+  font-weight: bold;
+  line-height: var(--col);
+  text-align: start;
+  padding-inline-start: calc(var(--fs) * 2);
+}
+
+/* ------------------
+ * 分割線：豎著的細線
+ * 用 .tate 多加一層選擇器，蓋過主題裡 .post-content hr 的橫線寫法
+ * --------------- */
+.tate .tate-page hr {
+  border: 0;
+  border-block-start: 1px solid #999;  /* 直排時 block-start 是右側，也就是線的粗細 */
+  background: none;
+  block-size: 0;                       /* 實際寬度只剩這 1px */
+  inline-size: 100%;                    /* 線的長度，佔頁高的 60% */
+  margin: 0;
+  margin-block: 1em;                   /* 線與左右文字的距離 */
+  margin-inline: auto;                 /* 在頁面上下方向置中 */
+}
+
+/* ------------------
+ * 清單
+ * 項目符號用 ::before 畫在第一行起點，內容整體往下縮排，換行後對齊。
+ * 編號用 cjk-decimal（逐位轉漢數字：5→五、12→一二、123→一二三，直排天生直立）；不加標點，粗體突出。
+ * 符號區寬度依項目數自動加寬：1～9 項 1.5 字、10～99 項 2.5 字、100 項以上 3.5 字。
+ * --------------- */
+.tate .tate-page ul,
+.tate .tate-page ol {
+  list-style: none;
+  margin: 0;
+  margin-block: .5em;
+  padding: 0;
+  white-space: normal;   /* 避免 li 之間的換行字元被 pre-wrap 撐出空行 */
+}
+
+.tate-page ol {
+  counter-reset: tate-ol;
+}
+
+.tate .tate-page li {
+  list-style: none;
+  position: relative;
+  margin: 0;
+  padding: 0;
+  padding-inline-start: 2em;   /* 符號區寬度；內容從這裡開始，換行也對齊在這 */
+}
+
+.tate-page li > p {
+  margin: 0;
+}
+
+.tate-page ol > li {
+  counter-increment: tate-ol;
+}
+
+.tate-page li::before {
+  position: absolute;
+  inset-block-start: 0;    /* 右側：與第一行同欄 */
+  inset-inline-start: 0;   /* 上方：頂在起點 */
+  font-weight: bold;
+  color: #000;
+}
+
+.tate-page ol > li::before {
+  content: counter(tate-ol, cjk-decimal);
+  font-family: Calibri, cursive, "WenYue GuTiFangSong F", "文悦古体仿宋 繁体 (需授权)", "YuKyokasho", "標楷體", "BiauKaiHK", "BiauKaiTC", DFKai-SB, "Kaiti TC",  STKaiti, "华文楷体";
+  font-size: .5em;
+  line-height: var(--col);
+}
+
+.tate .tate-page ol:has(> li:nth-child(10)) > li {
+  padding-inline-start: 2em;
+}
+
+.tate .tate-page ol:has(> li:nth-child(100)) > li {
+  padding-inline-start: 2em;
+}
+
+.tate-page ul > li::before {
+  content: "・";
+  inset-inline-start: .5em;   /* 離欄起點（上方）的距離 */
+}
+
+/* ------------------
+ * 引文
+ * --------------- */
+.tate-page blockquote {
+  margin: 0;
+  margin-block: .5em;        /* 引文與前後段落（左右方向）的間距 */
+  margin-inline: 1em;        /* 上：紅條離正文起點 1 字；下：框尾比正文短 1 字 */
+  border-left: 0;
+  border-inline-start: 4px solid #ff0000;
+  border-radius: 4px;
+  background-color: #f0e6d2;
+  padding: .25em;
+  padding-inline-start: calc(1em - 4px);  /* 1em 邊距 + 4px 紅條 + 這裡 = 文字離起點正好 2 字 */
+  padding-inline-end: .5em;               /* 框尾與文字之間留一點空 */
+}
+
+/* ------------------
+ * 專名號（直線）與書名號（波浪線）
+ * 繁體中文直排習慣畫在字的左側；要改成右側（日文傍線）把 left 換成 right。
+ * 不用 text-decoration：underline 在直排中的位置與 text-underline-position 的支援度
+ * 各瀏覽器不一，這裡用 border／background 畫，Chrome 與 Safari 結果一致。
+ * 用法：<span class="zm">老子</span>、<span class="sm">史記</span>
+ * -------------------------------- */
+.tate-page .zm,
+.tate-page u {
+  text-decoration: none;
+  border-left: 1px solid currentColor;
+  padding-left: 0em;          /* 線與字的距離；注意不要大於行距的一半（0.5em） */
+}
+
+.tate-page .sm {
+  text-decoration: none;
+  padding-left: .35em;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 6 12'%3E%3Cpath d='M3 0Q5.5 3 3 6T3 12' fill='none' stroke='%23000' stroke-width='.9'/%3E%3C/svg%3E");
+  background-repeat: repeat-y;
+  background-position: left top;
+  background-size: .3em .6em;  /* 寬:高 = 1:2，與上面 SVG 的 6:12 對應；改這裡可調波浪大小 */
+}
+
+/* ------------------
+ * 日文傍線（右側）：在 span 上加 .jp，例如 <span class="zm jp">…</span>
+ * 直排時注音（ruby）預設就在字的右側，會佔掉右邊的行距空隙，
+ * 所以含注音的 span 自動把線改回左側，避免線與注音重疊。
+ * -------------------------------- */
+.tate-page .zm.jp,
+.tate-page u.jp {
+  border-left: 0;
+  padding-left: 0;
+  border-right: 1px solid currentColor;
+  padding-right: .2em;
+}
+
+.tate-page .sm.jp {
+  padding-left: 0;
+  padding-right: .35em;
+  background-position: right top;
+}
+
+.tate-page .zm.jp:has(ruby),
+.tate-page u.jp:has(ruby) {
+  border-right: 0;
+  padding-right: 0;
+  border-left: 1px solid currentColor;
+  padding-left: .2em;
+}
+
+.tate-page .sm.jp:has(ruby) {
+  padding-right: 0;
+  padding-left: .35em;
+  background-position: left top;
+}
+
+/* ------------------
+ * 雙行夾註：((注文))
+ * 有 tate.js 時：由 JS 依欄尾剩餘空間把夾註拆成明確的兩欄（.jz-c），長度由內容決定。
+ * 沒有 JS 時的備援：外掛輸出的 --n（每欄小字數）讓 inline-block 折成兩欄。
+ * 小字 .75em × 行高 1 = 每欄 0.75 個正文字寬，兩欄合計 1.5 個正文字寬（正文一欄是 2 個字寬，放得下）。
+ * -------------------------------- */
+.tate-page .jz {
+  --jz: .75;                                   /* 夾註字級倍率 */
+  display: inline-block;
+  font-size: calc(var(--fs) * var(--jz));
+  line-height: 1;
+  inline-size: calc(var(--n) * 1em);
+  vertical-align: top;
+  margin-block-start: calc((var(--col) - 2 * var(--fs) * var(--jz)) / 2);
+  white-space: normal;
+  text-combine-upright: none;
+}
+
+/* tate.js 排版時把夾註拆成明確的兩欄，每欄一個不換行的區塊 */
+.tate-page .jz-c {
+  display: block;
+  white-space: nowrap;
+}
+
+/* ------------------
+ * 注音符號（直排）
+ * 外掛把 ㄏㄢˋ 拆成 .zs（符號）和 .zt（聲調）：符號沿用直排由上往下；
+ * 聲調脫離排版流，畫在最後一個符號的右側（二、三、四聲），輕聲的點畫在符號欄上方。
+ * 聲調用橫排（horizontal-tb）畫，所以 ˊ 不會被轉 90 度變成 ˋ。
+ * 下面的數字是初始值，請依你的字型實際效果微調。
+ * -------------------------------- */
+.tate-page rt.zy {
+  font-size: .4em;      /* 注音符號大小；三個符號 + 聲調約等於一個底字高 */
+  line-height: 1;
+  letter-spacing: 0;
+}
+
+.tate-page .zs {
+  position: relative;
+  display: inline-block;
+}
+
+.tate-page .zt {
+  position: absolute;
+  writing-mode: horizontal-tb;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* 二、三、四聲：最後一個符號的右側，靠符號的上緣 */
+.tate-page .zt2,
+.tate-page .zt3,
+.tate-page .zt4 {
+  left: 100%;
+  bottom: .15em;
+  margin-left: -.1em;
+}
+
+/* 輕聲：符號欄的上方，水平置中 */
+.tate-page .zt5 {
+  top: -.8em;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* ------------------
+ * 跨頁接續（class 由 tate.js 加上）
+ * .tate-more：這個外殼會在下一頁繼續（上一頁的片段）
+ * .tate-cont：這個外殼是從上一頁接過來的（下一頁的片段）
+ * --------------- */
+
+/* 接續的清單項會在新的一頁重複顯示編號／符號（刻意保留，方便辨識）；縮排不變，內容仍與上一欄對齊 */
+
+/* 清單每一項各包一層 ul/ol（為了能跨頁），把相鄰的外層邊距併回一份；跨頁處的邊距也拿掉 */
+.tate .tate-page :is(ul, ol) + :is(ul, ol) {
+  margin-block-start: 0;
+}
+.tate .tate-page :is(ul, ol):has(+ :is(ul, ol)) {
+  margin-block-end: 0;
+}
+.tate .tate-page :is(ul, ol).tate-cont {
+  margin-block-start: 0;
+}
+.tate .tate-page :is(ul, ol).tate-more {
+  margin-block-end: 0;
+}
+
+/* 引文跨頁：頁是沿「左右方向」被切開的（行由右往左排），
+ * 上一頁的片段左側打開，下一頁的接續片段右側打開；頂端的紅條與縮進每個片段都保留 */
+.tate-page blockquote.tate-more {
+  margin-block-end: 0;
+  padding-block-end: 0;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+.tate-page blockquote.tate-cont {
+  margin-block-start: 0;
+  padding-block-start: 0;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+/* ------------------
+ * 註腳
+ * 內文的註碼（sup）預設是「上標」：直排時被抬到右側，會和注音、相鄰那一欄的字撞在一起；
+ * 主題替連結加的底線，在直排裡也會變成橫線壓在下一個字上。
+ * 改成：不抬高、縮小、數字直立，緊跟在字後面，連結的底線與邊框全部拿掉。
+ * --------------- */
+.tate-page sup,
+.tate-page sub {
+  vertical-align: baseline;
+  line-height: 1;
+  font-size: .5em;
+  font-weight: bold;
+  text-combine-upright: all;   /* 數字直立，兩位數擠進一格 */
+}
+.tate .tate-page sup a,
+.tate .tate-page a.footnote-ref {
+  border: 0;
+  padding: 0;
+  text-decoration: none;
+}
+
+/* 文末註腳區：字小一點；與正文之間的分隔是上面的豎線（hr）；編號沿用清單樣式，換成藍色與內文註碼呼應 */
+.tate-page .footnotes {
+  font-size: .85em;
+}
+.tate-page .footnotes li::before {
+  content: "註" counter(tate-ol, cjk-decimal);   /* 與內文的「註一」對應 */
+  color: #3354aa;
+}
+
+/* 內文的註碼：由 tate.js 換成雙行夾註「註一」，本身是可點擊的連結 */
+.tate .tate-page a.jz {
+  border: 0;
+  padding: 0;
+  text-decoration: none;
+  font-weight: bold;
+  color: #3354aa;
+}
+
+/* 「↩」回到正文的連結在直排裡會橫躺，手機上也擠，先隱藏；要恢復就刪掉這條 */
+.tate-page .footnote-backref {
+  display: none;
+}
+
+/* 註腳註碼（「註一」）的大小與顏色 */
+.tate .tate-page a.jz.footnote-ref {
+  --jz: .5;               /* 字級 = 正文的 0.5 倍（一般夾註是 .75） */
+  font-weight: normal;    /* 不加粗，比較低調 */
+  color: #6b7fb3;         /* 較淡的藍；想更不顯眼可以改成灰色 */
+}
+
+/* ------------------
+ * 表格
+ * 直排時，表格的「列」是由右往左排的直欄，每一列裡的儲存格由上往下排。
+ * tate.js 以列為單位拆開，跨頁時在新的一頁重複表頭（thead.tate-rep）。
+ * --------------- */
+.tate .tate-page table {
+  width: auto;
+  max-width: none;
+  inline-size: auto;          /* 依內容決定大小，不再撐滿頁高 */
+  margin: 0;
+  margin-block: .5em;
+  margin-inline-end: 1em;     /* 表格下緣留 1 字的空白；內容很長時最多也只會長到這裡 */
+  border-collapse: collapse;
+  white-space: normal;
+}
+.tate .tate-page th,
+.tate .tate-page td {
+  border: 1px solid #bbb;
+  padding: .5em .25em;       /* 前兩個是上下（欄的起訖端），後面是左右 */
+  line-height: 1.5;           /* 儲存格內的行距收緊；正文是 2 */
+  text-align: start;
+  vertical-align: top;
+  text-wrap: balance;   /* 換行時讓各欄長短接近，避免單字落單 */
+}
+
+/* 讓數字直立 */
+.tate-page .tcy {
+  text-combine-upright: all;
+}
+
+/* ------------------
+ * 標題編號凸排（懸掛縮排）
+ * --hang 由 tate.js 寫在標題上（編號加後面空格佔幾個字寬，沒有編號的標題沒有這個值，等於 0）。
+ * 第一行維持原本的起點，標題換欄後，第二欄從文字的起點開始，編號與空格就凸出來。
+ * --------------- */
+.tate-page :is(h1, h2, h3, h4, h5, h6) {
+  text-indent: calc(var(--hang, 0em) * -1);
+}
+.tate-page h1 {
+  padding-inline-start: var(--hang, 0em);
+}
+.tate-page :is(h2, h3, h4, h5, h6) {
+  padding-inline-start: calc(var(--fs) * 2 + var(--hang, 0em));
+}
+
+.tate {
+  --len: min(640px, 87svh);   /* 第三類：手機（預設） */
+  /* …其餘照舊… */
+}
+
+/* 第二類：平板（直放、橫放都算） */
+@media (min-width: 700px) and (min-height: 600px) {
+  .tate { --len: min(840px, 78svh); }
+}
+
+/* 第一類：27 吋 4K 電腦 */
+@media (min-width: 1500px) and (min-height: 700px) {
+  .tate { --len: min(580px, 72svh); }
+}

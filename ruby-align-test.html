@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ruby-align 測試</title>
+<style>
+  body { font: 16px/1.6 system-ui, "PingFang TC", "Noto Sans TC", sans-serif; margin: 16px; color: #222; }
+  h2 { font-size: 1.05em; margin: 1.6em 0 .4em; border-bottom: 1px solid #ccc; }
+  .row { display: flex; flex-wrap: wrap; gap: 20px 28px; align-items: flex-start; }
+  .cell { text-align: center; }
+  .cell small { display: block; color: #666; font-size: .75em; margin-top: 4px; }
+  /* 底字用淡黃底，注音用淡藍底，看得出注音有沒有被拉到底字的寬度 */
+  ruby { font-size: 28px; background: #fff3c4; }
+  rt   { font-size: 12px; background: #cfe5ff; }
+  .v   { writing-mode: vertical-rl; height: 200px; }
+  .v ruby { font-size: 28px; }
+  .pw  { white-space: pre-wrap; }
+  .tj ruby { text-justify: inter-character; }
+  #env { background: #f4f4f4; padding: 8px; font: 12px/1.5 monospace; word-break: break-all; }
+  p.note { color: #555; font-size: .85em; }
+</style>
+</head>
+<body>
+<h1 style="font-size:1.2em">ruby-align 四個值的實際效果</h1>
+<p class="note">黃色是底字、藍色是注音。注音比底字短、而且有兩個以上可以拉開的字時，space-between 與 space-around 才會和 center 不同。請在「有問題的那台設備」上打開這個檔案，看每一排四個值的差別。</p>
+<div id="env"></div>
+
+<script>
+  var vals = ['start', 'center', 'space-between', 'space-around'];
+  var samples = [
+    ['A. 底字 5 字 ＋ 注音 3 個假名（應該看得出差別）', '日本語學校', 'にほん'],
+    ['B. 底字 4 字 ＋ 注音 2 個漢字（應該看得出差別）', '念頭之樹', '念頭'],
+    ['C. 底字 4 字 ＋ 英文單字，沒有空格（沒有可拉開的位置，依規格會居中）', '念頭之樹', 'MindTrees'],
+    ['D. 底字 4 字 ＋ 英文兩個字，中間有空格（只有一個空格可拉開）', '念頭之樹', 'Mind Trees']
+  ];
+  var groups = [
+    ['橫排', '', ''],
+    ['直排（writing-mode: vertical-rl）', 'v', ''],
+    ['直排 ＋ white-space: pre-wrap（你的 .tate-page 就是這樣）', 'v pw', ''],
+    ['橫排 ＋ text-justify: inter-character（實驗：讓英文字母之間也算可拉開的位置）', 'tj', '']
+  ];
+  var out = '';
+  groups.forEach(function (g) {
+    out += '<h2>' + g[0] + '</h2>';
+    samples.forEach(function (s) {
+      out += '<p class="note" style="margin:.8em 0 .2em">' + s[0] + '</p><div class="row">';
+      vals.forEach(function (v) {
+        out += '<div class="cell"><div class="' + g[1] + '"><ruby style="ruby-align:' + v + '">' + s[1] + '<rt>' + s[2] + '</rt></ruby></div><small>' + v + '</small></div>';
+      });
+      out += '</div>';
+    });
+  });
+  out += '<h2>E. ruby-overhang：注音比底字長，旁邊是假名時，注音能不能突出到假名上面</h2>';
+  [['橫排', ''], ['直排', 'v']].forEach(function (g) {
+    out += '<p class="note" style="margin:.8em 0 .2em">' + g[0] + '：これは「日本」にほんがっこうです（底字只有 2 字，注音 7 個假名）。auto 應該讓注音突出到旁邊的假名上，none 則會把底字撐開。</p><div class="row">';
+    ['auto', 'none'].forEach(function (v) {
+      out += '<div class="cell"><div class="' + g[1] + '"><span style="font-size:28px">これは</span><ruby style="ruby-align:center;ruby-overhang:' + v + '">日本<rt>にほんがっこう</rt></ruby><span style="font-size:28px">です</span></div><small>' + v + '</small></div>';
+    });
+    out += '</div>';
+  });
+  document.body.insertAdjacentHTML('beforeend', out);
+  document.getElementById('env').textContent =
+    'ruby-align: space-between 支援 = ' + CSS.supports('ruby-align', 'space-between') +
+    '\nruby-overhang 支援 = ' + CSS.supports('ruby-overhang', 'auto') +
+    '\ntext-justify 支援 = ' + CSS.supports('text-justify', 'inter-character') +
+    '\n' + navigator.userAgent;
+</script>
+</body>
+</html>
