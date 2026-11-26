@@ -19,6 +19,8 @@
 - **專名號**：`--專名--` 轉成直線
 - **雙行夾註**：`((注文))` 轉成兩欄小字，能跨欄接續
 - 標題層級、豎線分割線、清單（漢數字編號）、引文等 Markdown 樣式的直排版本
+- **註腳**：內文的註碼自動轉成可點擊的雙行夾註「註一」「註二」
+- **跨頁接續**：引文、清單項、粗體會填滿上一頁頁尾的剩餘空間，不會整塊跳頁而留白
 
 ## 環境需求
 
@@ -65,6 +67,11 @@
 | `《書名》` | 波浪線，書名號本身拿掉 | 只在 `[tate]` 內 |
 | `--專名--` | 直線（專名號） | 只在 `[tate]` 內 |
 | `((注文))`、`（（注文））` | 雙行夾註 | 只在 `[tate]` 內 |
+| `文字[^1]`，文末 `[^1]: 註腳內容` | 內文註碼轉成雙行夾註「註一」，可點擊 | 只在 `[tate]` 內；註腳區在文章最後，仍是橫排 |
+| `[漢字]{hanzi\|前\|朱}`、`日本{にほん\|藍}` | 讀音後面可接一個或多個 `\|標記`（順序不拘）：對齊 `前`／`中`／`均`／`散`，以及這一組注音的顏色（名稱同文字顏色）。只改注音，不改底字 | 標記有看不懂的，整段原樣保留；對齊需要 Chrome／Edge 128、Firefox 38、Safari／iOS 18.2 以上 |
+| `{{朱\|此語甚妙}}`、`{{b\|批註}}`、`{{#3498db\|文字}}` | 有顏色的文字（朱批、批註）；顏色可用中文名稱、單字母縮寫、`#十六進位`、`rgb()` | 全站可用；顏色名稱表在 `Plugin.php` 的 `$colors`；打錯顏色時原樣保留 |
+
+（表格裡的直線要寫成 `\|`，否則會被當成欄位分隔。）
 
 ### 範例
 
@@ -127,6 +134,7 @@
 | 標題層級 | `h1`～`h6` 的規則 |
 | 清單符號區寬度 | `.tate .tate-page li` 的 `padding-inline-start` |
 | 注音或標題等的字型 | 各規則裡的 `font-family`（本專案不附任何字型，請自行安裝） |
+| 註腳註碼（「註一」）的大小 | `a.jz.footnote-ref` 的 `--jz`（預設沿用夾註，改 `.5` 會比較小） |
 
 `Plugin.php` 開頭的 `JZ_CHUNK` 可讓夾註在沒有 JavaScript 時也能跟著換欄，預設為 0（不切段），一般不需要改。
 
@@ -141,6 +149,7 @@
 - **轉換只作用於文章內容**，不會處理 `<pre>`、`<code>`、HTML 屬性與註解裡的標記。
 - **只針對 Typecho 預設主題的樣式測試過**，其他主題如果對 `hr`、`blockquote`、標題或清單有自己的樣式，可能需要調整 `tate.css`。
 - **沒有附任何字型**。聲調符號是單獨用橫排畫的，不依賴字型的 OpenType 功能，但位置數值是依作者使用的字型調的，換字型後可能需要微調。
+- **註腳內容仍是橫排**：Typecho 把註腳區放在整篇文章的最後，不在 `[tate]` 與 `[/tate]` 之間，所以註腳的文字仍是橫排；直排的只有內文的註碼「註一」。
 
 ## 運作原理
 
@@ -171,6 +180,8 @@ A [Typecho](https://typecho.org) plugin that typesets articles in **vertical wri
 - **Proper-noun mark**: `--Name--` becomes a straight line
 - **Double-line inline notes** (夾註): `((note))` becomes two columns of small text that can flow across columns
 - Vertical versions of headings, vertical rules, lists (numbered with Chinese numerals), and blockquotes
+- **Footnotes**: footnote markers in the text become clickable double-line notes reading 「註一」, 「註二」…
+- **Content flows across pages**: blockquotes, list items, and bold text fill the space left on the previous page instead of jumping to the next page and leaving a gap
 
 ## Requirements
 
@@ -180,7 +191,7 @@ A [Typecho](https://typecho.org) plugin that typesets articles in **vertical wri
 | PHP | 7.0 or later (the code uses the `"\u{...}"` string syntax) |
 | Browser | CSS `:has()` and the `svh` unit are required (Chrome 108+, Safari 15.4+, Firefox 121+). `text-wrap: balance` is optional; without it, wrapped headings just aren't balanced. |
 
-> These requirements are inferred from the syntax and APIs the code uses. The author tested with Typecho (fill in version), PHP (fill in version), and Chrome and Safari on macOS. Firefox and other browsers are untested.
+> These requirements are inferred from the syntax and APIs the code uses. The author tested with Typecho 1.3.0, PHP 8.2, and Chrome (154) and Safari (27) on macOS. Firefox and other browsers are untested.
 
 ## Installation
 
@@ -217,6 +228,9 @@ Text here is set vertically.
 | `《Title》` | Wavy line; the brackets are removed | Inside `[tate]` only |
 | `--Name--` | Straight line (proper-noun mark) | Inside `[tate]` only |
 | `((note))`, `（（note））` | Double-line inline note | Inside `[tate]` only |
+| `text[^1]` with `[^1]: note` at the end | The in-text marker becomes a clickable double-line note 「註一」 | Inside `[tate]` only; the footnote section at the end of the post stays horizontal |
+| `[漢字]{hanzi\|前\|朱}`, `日本{にほん\|藍}` | A reading can be followed by one or more `\|markers` in any order: alignment (`前` / `中` / `均` / `散`) and the color of that one annotation (same names as text colors). Only the annotation changes, not the base text | If any marker is not recognized the whole thing is left as written; alignment needs Chrome/Edge 128, Firefox 38, or Safari/iOS 18.2+ |
+| `{{朱\|此語甚妙}}`, `{{b\|note}}`, `{{#3498db\|text}}` | Coloured text (vermilion annotations, comments); the color can be a Chinese name, a one-letter shortcut, `#hex`, or `rgb()` | Works everywhere; the name table is `$colors` in `Plugin.php`; an unrecognized color leaves the text as written |
 
 ### Example
 
@@ -279,6 +293,7 @@ All styling lives in `tate.css`. Common adjustments:
 | Heading hierarchy | the `h1`–`h6` rules |
 | Width of the list marker area | `padding-inline-start` on `.tate .tate-page li` |
 | Fonts for ruby, headings, etc. | the `font-family` in each rule (this project ships no fonts; install your own) |
+| Size of the footnote marker (「註一」) | `--jz` on `a.jz.footnote-ref` (follows the inline-note ratio by default; `.5` makes it smaller) |
 
 The `JZ_CHUNK` constant at the top of `Plugin.php` lets notes wrap across columns even without JavaScript. It defaults to 0 (no chunking) and normally does not need changing.
 
@@ -293,6 +308,7 @@ The `JZ_CHUNK` constant at the top of `Plugin.php` lets notes wrap across column
 - **Conversion applies to post content only**, and leaves `<pre>`, `<code>`, HTML attributes, and comments alone.
 - **Tested only against the default Typecho theme.** Themes that style `hr`, `blockquote`, headings, or lists themselves may need adjustments in `tate.css`.
 - **No fonts are bundled.** Tone marks are drawn separately in horizontal mode and do not depend on OpenType features of the font, but the offsets were tuned to the author's font and may need fine-tuning with yours.
+- **Footnote text stays horizontal.** Typecho places the footnote section at the very end of the post, outside `[tate]…[/tate]`, so only the in-text marker (「註一」) is vertical.
 
 ## How it works
 
