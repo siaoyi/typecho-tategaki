@@ -18,7 +18,7 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
  *
  * @package Furigana
  * @author Siaoyi
- * @version 1.3.0
+ * @version 1.4.0
  * @link https://typecho.org
  */
 class Plugin implements PluginInterface
